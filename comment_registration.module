@@ -1,0 +1,120 @@
+<?php
+// $Id$
+
+/**
+ * Implementation of hook_form_FORM_ID_alter().
+ */
+function comment_registration_form_comment_form_alter(&$form, $form_state) {
+
+  // if account creation is set to admin only, do nothing and return.
+  if (variable_get('user_register', 1) == '0') {
+    return;
+  }
+
+  // add fields to comment form for anonymous users.
+  global $user;
+  if ($user->uid == 0) {
+    $form['comment_registration_register'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Register for new account with comment.'),
+      '#return_value' => '1',
+      '#default_value' => '0',
+      '#weight' => !isset($form['homepage']) ? -10 : -5,
+    );
+    if (!isset($form['name'])) {
+      $form['name'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Username'),
+        '#maxlength' => USERNAME_MAX_LENGTH,
+        '#required' => TRUE,
+        '#prefix' => !isset($form['homepage']) ? '<div id="comment-registration-info-wrapper">' : '',
+        '#after_build' => array('comment_registration_after_build'),
+      );
+    }
+    if (!isset($form['mail'])) {
+      $form['mail'] = array(
+        '#type' => 'textfield',
+        '#title' => t('E-mail address'),
+        '#maxlength' => EMAIL_MAX_LENGTH,
+        '#description' => t('A valid e-mail address. All e-mails from the system will be sent to this address. The e-mail address is not made public and will only be used if you wish to receive a new password or wish to receive certain news or notifications by e-mail.'),
+        '#required' => TRUE,
+        '#after_build' => array('comment_registration_after_build'),
+      );
+    }
+    $form['name']['#weight'] = -8;
+    $form['mail']['#weight'] = -7;
+    if (isset($form['homepage'])) {
+      $form['homepage']['#weight'] = -6;
+    }
+
+    // if email validation is off, add password fields to comment form (matches core registration behavior).
+    if (variable_get('user_email_verification', 1) == '0') {
+      drupal_add_js(drupal_get_path('module', 'comment_registration') .'/comment_registration.js');
+      drupal_add_css(drupal_get_path('module', 'comment_registration') .'/comment_registration.css');
+      $form['comment_registration_password'] = array(
+        '#type' => 'password_confirm',
+        '#maxlength' => 60,
+        '#size' => 30,
+        '#weight' => -4,
+        '#required' => TRUE,
+        '#suffix' => !isset($form['homepage']) ? '</div>' : '',
+        '#after_build' => array('comment_registration_after_build'),
+      );
+    }
+
+    // insert custom validation as first item.
+    $form['#validate'][] = 'comment_registration_validate';
+    $form['#validate'] = array_reverse($form['#validate']);
+
+    // insert custom submit as first item.
+    $form['#submit'][] = 'comment_registration_submit';
+    $form['#submit'] = array_reverse($form['#submit']);
+  }
+}
+
+/**
+ * Password_confirm element type #after_build callback.
+ */
+function comment_registration_after_build($element, &$form_state) {
+  // don't validate unnecessary form elements when the comment register checkbox is unchecked.
+  if ($form_state['values']['comment_registration_register'] == 0) {
+    // don't understand why, but this is necessary to bypass validation on password_confirm fapi elements.
+    isset($element['#element_validate']) ? $element['#element_validate'] = NULL : NULL;
+
+    // but this is needed to bypass validation on other fapi elements.
+    isset($element['#needs_validation']) ? $element['#needs_validation'] = NULL : NULL;
+  }
+  return $element;
+}
+
+/**
+ * Validation routine for comment registration form.
+ */
+function comment_registration_validate($form, &$form_state) {
+  if ($form_state['values']['comment_registration_register'] == 1) {
+    // use user.module's username and email validation function.
+    user_module_invoke('validate', $form_state['values'], $form_state['values'], 'account');
+  }
+}
+
+/**
+ * Submit routine for comment registration form.
+ */
+function comment_registration_submit($form, &$form_state) {
+  if ($form_state['values']['comment_registration_register'] == 1) {
+    // prepare the $form_state array for user module's submit function.
+    $form_state['values']['pass'] = $form_state['values']['comment_registration_password'];
+    unset($form_state['values']['uid']);
+
+    // use user module's submit function.
+    user_register_submit($form, $form_state);
+    if (!isset($form_state['user'])) {
+      form_set_error('comment_registration', 'Unable to create new account.');
+      watchdog('comment_register', 'New user: %name (%email).', array('%name' => $form_state['values']['name'], '%email' => $form_state['values']['mail']), WATCHDOG_ERROR, l(t('edit'), 'node/' . $form_state['values']['nid'], array('query' => 'comment-' . $form_state['values']['cid'])));
+    }
+    else {
+      $form_state['values']['uid'] = $form_state['user']->uid;
+      $form_state['values']['redirect'] = NULL;
+    }
+  }
+}
