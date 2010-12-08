@@ -1,4 +1,0 @@
-; $Id$
-name = "Comment Registration"
-description = "Allows users to register inline when submitting comments."
-core = 6.x
