@@ -1,4 +1,3 @@
-$Id$
 
 The Comment Registration module enables the inline registration of new accounts
 while commenting. It works with or without the core anonymous commenting contact

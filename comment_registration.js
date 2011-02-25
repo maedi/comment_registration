@@ -1,4 +1,3 @@
-//$Id$
 Drupal.behaviors.comment_registration = function(){
   if ($('#comment-registration-info-wrapper').length) {
     var target = $('#comment-registration-info-wrapper');
