@@ -1,9 +1,10 @@
-#edit-comment-registration-password-pass1-wrapper,
-#edit-comment-registration-password-pass2-wrapper {
-  float: left;
-  margin-right: 20px;
+input#edit-comment-registration-password-pass1,
+input#edit-comment-registration-password-pass2 {
+  width: 95%
 }
-#edit-comment-wrapper,
-#edit-subject-wrapper {
-  clear: left;
+.password-strength {
+  margin-right: 3%
+} 
+.comment-form .form-type-checkbox.form-item-comment-registration-register {
+  margin-left: 0;
 }
