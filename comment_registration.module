@@ -102,15 +102,21 @@ function comment_registration_form_after_build($form, &$form_state) {
  * Removes required validation for a specified form element and all of its children.
  */
 function _comment_registration_disable_validation(&$element) {
-    // bypass validation on password_confirm fapi elements
-    isset($element['#element_validate']) ? $element['#element_validate'] = NULL : NULL;
+dsm(drupal_get_path('module', 'user'));
+dsm(drupal_get_path('module', 'comment_registration'));
+  drupal_add_js(drupal_get_path('module', 'comment_registration') . '/comment_registration_comment_form.js');
+  drupal_add_css(drupal_get_path('module', 'comment_registration') . '/comment_registration.css');
+  drupal_add_js(drupal_get_path('module', 'user') . '/user.js');
+  drupal_add_css(drupal_get_path('module', 'user') . '/user.css');
+  // bypass validation on password_confirm fapi elements
+  isset($element['#element_validate']) ? $element['#element_validate'] = NULL : NULL;
 
-    // bypass validation on other fapi elements
-    isset($element['#needs_validation']) ? $element['#needs_validation'] = NULL : NULL;
+  // bypass validation on other fapi elements
+  isset($element['#needs_validation']) ? $element['#needs_validation'] = NULL : NULL;
 
-    foreach (element_children($element) as $key) {
-      _comment_registration_disable_validation($element[$key]);
-    }
+  foreach (element_children($element) as $key) {
+    _comment_registration_disable_validation($element[$key]);
+  }
 }
 
 
