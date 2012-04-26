@@ -102,8 +102,6 @@ function comment_registration_form_after_build($form, &$form_state) {
  * Removes required validation for a specified form element and all of its children.
  */
 function _comment_registration_disable_validation(&$element) {
-dsm(drupal_get_path('module', 'user'));
-dsm(drupal_get_path('module', 'comment_registration'));
   drupal_add_js(drupal_get_path('module', 'comment_registration') . '/comment_registration_comment_form.js');
   drupal_add_css(drupal_get_path('module', 'comment_registration') . '/comment_registration.css');
   drupal_add_js(drupal_get_path('module', 'user') . '/user.js');
