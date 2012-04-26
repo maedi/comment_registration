@@ -2,7 +2,7 @@
 Drupal.behaviors.comment_registration = {
   attach: function (context) {
     var register = $('#edit-comment-registration-register');
-    var passwd = $('div.form-item-comment-registration-password');
+    var passwd = $('#edit-comment-registration-form');
 
     if ($(register).is(':checked') == false) $(passwd).hide();
     $(register).change(function(){
