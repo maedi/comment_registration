@@ -37,6 +37,11 @@ function comment_registration_form_comment_form_alter(&$form, $form_state) {
 
   drupal_add_js(drupal_get_path('module', 'comment_registration') . '/comment_registration_comment_form.js');
   drupal_add_css(drupal_get_path('module', 'comment_registration') . '/comment_registration.css');
+
+  if(isset($form['name']['#default_value']))  {
+    $form['name']['#default_value'] = '';
+  }
+
   $form['comment_registration_register'] = array(
     '#type' => 'checkbox',
     '#title' => t('Register for account with comment.'),
@@ -122,13 +127,14 @@ function _comment_registration_disable_validation(&$element) {
  * Validation handler for comment registration form.
  */
 function comment_registration_validate($form, &$form_state) {
-  // check for the username and email from the appropriate comment form fields
-  if (variable_get('comment_anonymous_' . $form['#node']->type, 0) == 1) {
-    if (empty($form_state['values']['name'])) {
-      form_set_error('name', t('You cannot register while commenting without providing a name.'));
-    }
-    if (empty($form_state['values']['mail'])) {
-      form_set_error('mail', t('You cannot register while commenting without providing an e-mail address.'));
+  if ($form_state['values']['comment_registration_register'] == 1) {
+    if (variable_get('comment_anonymous_' . $form['#node']->type, 0) == 1) {
+      if (empty($form_state['values']['name'])) {
+        form_set_error('name', t('You cannot register while commenting without providing a name.'));
+      }
+      if (empty($form_state['values']['mail'])) {
+        form_set_error('mail', t('You cannot register while commenting without providing an e-mail address.'));
+      }
     }
   }
 }
