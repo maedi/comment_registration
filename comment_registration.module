@@ -10,13 +10,14 @@
  */
 function comment_registration_form_node_type_form_alter(&$form, $form_state) {
   if (isset($form['type'])) {
-    drupal_add_js(drupal_get_path('module', 'comment_registration') . '/comment_registration_node_settings.js');
     $form['comment']['comment_registration_enabled'] = array(
       '#title' => 'Enable comment registration',
       '#description' => t('Allow users to register for accounts via the comment form.'),
       '#type' => 'checkbox',
       '#default_value' => variable_get('comment_registration_enabled_' . $form['#node_type']->type, 0),
       '#weight' => -1,
+      '#access' => user_access('post comments', drupal_anonymous_user()),
+      '#attached' => array('js' => array(drupal_get_path('module', 'comment_registration') . '/comment_registration_node_settings.js')),
     );
     $form['comment']['comment_anonymous']['#weight'] = -1;
   }
@@ -31,12 +32,9 @@ function comment_registration_form_comment_form_alter(&$form, $form_state) {
   // if user is not anonymous, or account creation is set to admin only, or anonymus commenters can't leave contact info,
   // or commment registration is not enabled for this content type, do nothing and return.
   global $user;
-  if ($user->uid != 0 || variable_get('user_register', 1) == '0' || variable_get('comment_registration_enabled_' . $form['#node']->type, 0) == '0' || variable_get('comment_anonymous_' . $form['#node']->type, 0) == '0') {
+  if ($user->uid > 0 || variable_get('comment_registration_enabled_' . $form['#node']->type, 0) == 0 || variable_get('user_register', USER_REGISTER_ADMINISTRATORS_ONLY) == USER_REGISTER_ADMINISTRATORS_ONLY || variable_get('comment_anonymous_' . $form['#node']->type, COMMENT_ANONYMOUS_MAYNOT_CONTACT) == COMMENT_ANONYMOUS_MAYNOT_CONTACT) {
     return;
   }
-
-  drupal_add_js(drupal_get_path('module', 'comment_registration') . '/comment_registration_comment_form.js');
-  drupal_add_css(drupal_get_path('module', 'comment_registration') . '/comment_registration.css');
 
   if(isset($form['name']['#default_value']))  {
     $form['name']['#default_value'] = '';
@@ -47,6 +45,10 @@ function comment_registration_form_comment_form_alter(&$form, $form_state) {
     '#title' => t('Register for account with comment.'),
     '#default_value' => '0',
     '#weight' => -2,
+    '#attached' => array(
+      'js' => array(drupal_get_path('module', 'comment_registration') . '/comment_registration_comment_form.js'),
+      'css' => array(drupal_get_path('module', 'comment_registration') . '/comment_registration.css'),
+    ),
   );
   $form['comment_registration_form'] = array(
     '#type' => 'fieldset',
@@ -150,7 +152,10 @@ function comment_registration_submit($form, &$form_state) {
     $form['comment_registration_form']['form']['account']['name'] = $form_state['values']['name'];
     $form['comment_registration_form']['form']['account']['mail'] = $form_state['values']['mail'];
     $form['comment_registration_form']['form']['account']['pass'] = $form['comment_registration_form']['form']['account']['pass2'];
+    $form_state['values']['pass'] = $form['comment_registration_form']['form']['account']['pass2']['#value']['pass2'];
     unset($form['comment_registration_form']['form']['account']['pass2']);
+    unset($form_state['values']['pass2']);
+
     user_register_submit($form['comment_registration_form']['form'], $form_state);
 
     // change the author of the current comment to the newly create user

@@ -5,7 +5,7 @@ Drupal.behaviors.comment_registration = {
     var passwd = $('#edit-comment-registration-form');
 
     if ($(register).is(':checked') == false) $(passwd).hide();
-    $(register).change(function(){
+    $(register).click(function(){
 	    if($(register).is(':checked')) {
 		    $(passwd).show();
 	    } else {
