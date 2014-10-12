@@ -1,0 +1,7 @@
+name = Comment Registration Profile2 Integration
+description = Embed profile2 forms in Comment Registration forms
+core = 7.x
+package = Authentication
+
+dependencies[] = comment_registration
+dependencies[] = profile2
