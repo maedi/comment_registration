@@ -10,16 +10,26 @@
  */
 function comment_registration_form_node_type_form_alter(&$form, $form_state) {
   if (isset($form['type'])) {
+    // drupal core anonymous commenting dropdown
+    $form['comment']['comment_anonymous']['#weight'] = -3;
+
     $form['comment']['comment_registration_enabled'] = array(
       '#title' => 'Enable comment registration',
       '#description' => t('Allow users to register for accounts via the comment form.'),
       '#type' => 'checkbox',
       '#default_value' => variable_get('comment_registration_enabled_' . $form['#node_type']->type, 0),
-      '#weight' => -1,
+      '#weight' => -2,
       '#access' => user_access('post comments', drupal_anonymous_user()),
       '#attached' => array('js' => array(drupal_get_path('module', 'comment_registration') . '/comment_registration_node_settings.js')),
     );
-    $form['comment']['comment_anonymous']['#weight'] = -1;
+    $form['comment']['comment_registration_mandatory'] = array(
+      '#title' => 'Make comment registration mandatory',
+      '#description' => t('Anonymous users must make an account.'),
+      '#type' => 'checkbox',
+      '#default_value' => variable_get('comment_registration_mandatory_' . $form['#node_type']->type, 0),
+      '#weight' => -1,
+      '#access' => user_access('post comments', drupal_anonymous_user()),
+    );
   }
 }
 
@@ -40,6 +50,7 @@ function comment_registration_form_comment_form_alter(&$form, $form_state) {
     $form['name']['#default_value'] = '';
   }
 
+  // register for account option
   $form['comment_registration_register'] = array(
     '#type' => 'checkbox',
     '#title' => t('Register for account with comment.'),
@@ -50,6 +61,12 @@ function comment_registration_form_comment_form_alter(&$form, $form_state) {
       'css' => array(drupal_get_path('module', 'comment_registration') . '/comment_registration.css'),
     ),
   );
+  // enable then hide the "register for account" option if comment registration mandatory
+  if (variable_get('comment_registration_mandatory_' . $form['#node']->type, 0)) {
+    $form['comment_registration_register']['#default_value'] = '1';
+    $form['comment_registration_register']['#access'] = FALSE;
+  }
+
   $form['comment_registration_form'] = array(
     '#type' => 'fieldset',
     '#title' => 'Register',
