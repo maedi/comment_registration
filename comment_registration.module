@@ -10,27 +10,92 @@
  */
 function comment_registration_form_node_type_form_alter(&$form, $form_state) {
   if (isset($form['type'])) {
-    // drupal core anonymous commenting dropdown
-    $form['comment']['comment_anonymous']['#weight'] = -3;
-
-    $form['comment']['comment_registration_enabled'] = array(
+    // Drupal core anonymous commenting dropdown
+    $form['comment']['comment_anonymous']['#weight'] = -4;
+    // Fieldset
+    $form['comment_registration'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Comment Registration'),
+      '#group' => 'additional_settings',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    // Message
+    $form['comment_registration']['message'] = array(
+      '#type' => 'container',
+      '#states' => array(
+        'visible' => array(
+          array(':input[name="comment_anonymous"]' => array('value' => '0')),
+        ),
+      ),
+      'markup' => array(
+        '#markup' =>
+          'Enable one of these options under <em>Anonymous commenting</em> in <em>Comment settings</em> to configure:<br />' .
+          '<ul>' .
+            '<li>Anonymous posters may leave their contact information</li>' .
+            '<li>Anonymous posters must leave their contact information</li>' .
+          '</ul>'
+      ),
+    );
+    // Comment registration enabled?
+    $form['comment_registration']['comment_registration_enabled'] = array(
       '#title' => 'Enable comment registration',
       '#description' => t('Allow users to register for accounts via the comment form.'),
       '#type' => 'checkbox',
       '#default_value' => variable_get('comment_registration_enabled_' . $form['#node_type']->type, 0),
-      '#weight' => -2,
+      '#weight' => -10,
       '#access' => user_access('post comments', drupal_anonymous_user()),
-      '#attached' => array('js' => array(drupal_get_path('module', 'comment_registration') . '/comment_registration_node_settings.js')),
+      '#states' => array(
+        'visible' => array(
+          array(
+            array(':input[name="comment_anonymous"]' => array('value' => '1')),
+            'or',
+            array(':input[name="comment_anonymous"]' => array('value' => '2')),
+          ),
+        ),
+      ), 
+    );    
+    // Container
+    $form['comment_registration']['comment_registration_container'] = array(
+      '#type' => 'container',
+      '#weight' => -3,
+      '#states' => array(
+        'visible' => array(
+          array(
+            array(':input[name="comment_anonymous"]' => array('value' => '0')),
+            'xor',
+            array(':input[name="comment_registration_enabled"]' => array('checked' => TRUE)),
+          ),       
+        ),
+      ),
     );
-    $form['comment']['comment_registration_mandatory'] = array(
-      '#title' => 'Make comment registration mandatory',
-      '#description' => t('Anonymous users must make an account.'),
+    // Comment registration optional?
+    $form['comment_registration']['comment_registration_container']['comment_registration_optional'] = array(
+      '#title' => 'Comment registration is optional',
+      '#description' => t('Allow users to choose if they want to register or post anonymously.'),
       '#type' => 'checkbox',
-      '#default_value' => variable_get('comment_registration_mandatory_' . $form['#node_type']->type, 0),
-      '#weight' => -1,
-      '#access' => user_access('post comments', drupal_anonymous_user()),
+      '#default_value' => variable_get('comment_registration_optional_' . $form['#node_type']->type, 0),
+      '#weight' => -2,     
     );
+
+    // Hide Username
+    $form['comment_registration']['comment_registration_container']['comment_registration_hide_username'] = array(
+      '#title' => 'Email registration',
+      '#description' => t('Hide core comment Author field and auto generate username from email.'),
+      '#type' => 'checkbox',
+      '#default_value' => variable_get('comment_registration_hide_username_' . $form['#node_type']->type, 0),
+      '#weight' => 2,
+    );   
+    // Hide Homepage
+    $form['comment_registration']['comment_registration_container']['comment_registration_profile2_hide_homepage'] = array(
+      '#title' => 'Hide Homepage field',
+      '#description' => t('Hide core comment Homepage field.'),
+      '#type' => 'checkbox',
+      '#default_value' => variable_get('comment_registration_profile2_hide_homepage_' . $form['#node_type']->type, 0),
+      '#weight' => 4,
+    );    
   }
+  //dpm($form);
 }
 
 
@@ -61,8 +126,10 @@ function comment_registration_form_comment_form_alter(&$form, $form_state) {
       'css' => array(drupal_get_path('module', 'comment_registration') . '/comment_registration.css'),
     ),
   );
-  // enable then hide the "register for account" option if comment registration mandatory
-  if (variable_get('comment_registration_mandatory_' . $form['#node']->type, 0)) {
+  // enable then hide the "register for account" option if comment registration optional
+  $comment_registration_optional = variable_get('comment_registration_optional_' . $form['#node']->type, 0);
+  dpm($comment_registration_optional);
+  if ($comment_registration_optional) {
     $form['comment_registration_register']['#default_value'] = '1';
     $form['comment_registration_register']['#access'] = FALSE;
   }
@@ -165,6 +232,15 @@ function comment_registration_validate($form, &$form_state) {
 function comment_registration_submit($form, &$form_state) {
   if ($form_state['values']['comment_registration_register'] == 1) {
 
+    // Config variables
+    $hide_username = variable_get('comment_registration_hide_username_' . $form['#node']->type, array());
+
+    if ($hide_username) {
+      //$form['author']['name']['#required'] = FALSE;
+      //hide($form['author']['name']);
+      array_unshift($form['#validate'], 'comment_registration_profile2_form_comment_form_validate');
+    }
+
     // setup the user registration form and submit via the user registration submit function
     $form['comment_registration_form']['form']['account']['name'] = $form_state['values']['name'];
     $form['comment_registration_form']['form']['account']['mail'] = $form_state['values']['mail'];
@@ -175,13 +251,23 @@ function comment_registration_submit($form, &$form_state) {
 
     user_register_submit($form['comment_registration_form']['form'], $form_state);
 
-    // change the author of the current comment to the newly create user
+    // change the author of the current comment to the newly created user
     global $user;
     if ($user->uid > 0) {
+      dpm('if');
       $form_state['values']['uid'] = $user->uid;
     }
     elseif ($account = user_load_by_mail($form['comment_registration_form']['form']['account']['mail'])) {
+      dpm('elseif');
       $form_state['values']['uid'] = $account->uid;
     }
+
+    // Log user in.
+    $form_state['uid'] = $account->uid;
+    user_login_submit(array(), $form_state);
+
+    // Log the user in if they created the account and immediate login is enabled.
+    //$form_state['redirect'] = logintoboggan_process_login($account, $edit, $redirect);
+    
   }
 }

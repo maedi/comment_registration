@@ -9,21 +9,10 @@ function comment_registration_profile2_form_node_type_form_alter(&$form, $form_s
   if (isset($form['type'])) {
 
     $profile_types = profile2_get_types();
-    if ($profile_types) {
-
-      $options = array('_none' => "None");
-      foreach ($profile_types as $type_name => $profile_type) {
-        $options[$profile_type->type] = $profile_type->label;
-      }
-
-      $form['comment']['comment_registration_profile2'] = array(
-        '#type' => 'radios',
-        '#title' => t('Comment Registration Profile2 Integration'),
-        '#default_value' => variable_get('comment_registration_profile2_' . $form['#node_type']->type, array()),
-        '#description' => t('The profile2 to include in comments registrations for this content type.'),
-        '#access' => user_access('post comments', drupal_anonymous_user()),
-        '#options' => $options,
-        '#weight' => -1,
+    if ($profile_types) {    
+      // Container
+      $form['comment_registration']['comment_registration_profile2_container'] = array(
+        '#type' => 'container',
         '#states' => array(
           'visible' => array(
             array(
@@ -32,7 +21,22 @@ function comment_registration_profile2_form_node_type_form_alter(&$form, $form_s
               array(':input[name="comment_anonymous"]' => array('value' => '2')),
             ),
           ),
-        ),        
+        ),
+      );
+
+      // Profile 2 radios
+      $options = array('_none' => "None");
+      foreach ($profile_types as $type_name => $profile_type) {
+        $options[$profile_type->type] = $profile_type->label;
+      }
+      $form['comment_registration']['comment_registration_profile2_container']['comment_registration_profile2_type'] = array(
+        '#type' => 'radios',
+        '#title' => t('Comment Registration Profile2 Integration'),
+        '#default_value' => variable_get('comment_registration_profile2_type_' . $form['#node_type']->type, array()),
+        '#description' => t('The profile2 to include in comments registrations for this content type.'),
+        '#access' => user_access('post comments', drupal_anonymous_user()),
+        '#options' => $options,
+        '#weight' => 1,
       );
     }
     system_settings_form($form);
@@ -44,8 +48,10 @@ function comment_registration_profile2_form_node_type_form_alter(&$form, $form_s
 
 function comment_registration_profile2_form_comment_form_alter(&$form, &$form_state, $form_id) {
 
-  // Get profile2 type for this comment form
-  $type_name = variable_get('comment_registration_profile2_' . $form['#node']->type, array());
+  // Config variables
+  $type_name =     variable_get('comment_registration_profile2_type_' . $form['#node']->type, array());
+  $hide_subject =  variable_get('comment_registration_profile2_hide_subject_' . $form['#node']->type, array());
+  $hide_homepage = variable_get('comment_registration_profile2_hide_homepage_' . $form['#node']->type, array());
 
   // Include profile2 on comment registration form
   if (!empty($type_name) && $type_name != '_none') {
@@ -54,12 +60,18 @@ function comment_registration_profile2_form_comment_form_alter(&$form, &$form_st
     }
     profile2_attach_form($form, $form_state);
   }
-  // Wrap each profile form in a fieldset.
-  //$form['profile_' . $type_name] += array(
-  //  '#type' => 'fieldset', 
-  //  '#title' => check_plain($profile_type->getTranslation('label')),
-  //);
-  //dpm($form);  
+
+  if ($hide_homepage) {
+    hide($form['author']['homepage']);
+  }
+  //dpm($form);
+}
+
+function comment_registration_profile2_form_comment_form_validate(&$form, $form_state) {
+  //dpm('$submit');
+  $form['author']['name']['#value'] = comment_registration_profile2_email_to_username($form['author']['mail']['#value']);
+  //dpm($form);
+  //dpm($form['author']['name']['#value']);
 }
 
 // HELPERS
@@ -99,9 +111,7 @@ function comment_registration_profile2_unique_username($base) {
     if (strlen($base . $i) > USERNAME_MAX_LENGTH) {
       $base = substr($base, 0, strlen($base) - strlen($i));
     }
-
     $username = $base . $i++;
   }
-
   return $username;
-}//
+}

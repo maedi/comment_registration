@@ -1,3 +1,4 @@
 name = "Comment Registration"
 description = "Allows users to register inline when submitting comments."
 core = 7.x
+package = Authentication
