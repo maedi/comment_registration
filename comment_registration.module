@@ -70,8 +70,8 @@ function comment_registration_form_node_type_form_alter(&$form, $form_state) {
     );
     // Comment registration optional?
     $form['comment_registration']['comment_registration_container']['comment_registration_optional'] = array(
-      '#title' => 'Comment registration is optional',
-      '#description' => t('Allow users to choose if they want to register or post anonymously.'),
+      '#title' => 'Comment registration is optional.',
+      '#description' => t('Allow users to choose if they want to register or post anonymously. Note: Email Registration support is disabled with this option.'),
       '#type' => 'checkbox',
       '#default_value' => variable_get('comment_registration_optional_' . $form['#node_type']->type, 0),
       '#weight' => -2,     
@@ -106,6 +106,7 @@ function comment_registration_form_comment_form_alter(&$form, $form_state) {
   // Config variables
   $hide_homepage = variable_get('comment_registration_profile2_hide_homepage_' . $form['#node']->type, array());
   $hide_comment_body = variable_get('comment_registration_hide_comment_body_' . $form['#node']->type, array());
+  $comment_registration_optional = variable_get('comment_registration_optional_' . $form['#node']->type, 0);
 
   // Do not proceed if user authenticated, or account creation is set to admin only, or anonymus commenters can't leave contact info, or commment registration is not enabled for this content type
   global $user;
@@ -131,7 +132,6 @@ function comment_registration_form_comment_form_alter(&$form, $form_state) {
     ),
   );
   // Enable and hide "register for account" option if comment registration not optional
-  $comment_registration_optional = variable_get('comment_registration_optional_' . $form['#node']->type, 0);
   if (empty($comment_registration_optional)) {
     $form['comment_registration_register']['#default_value'] = '1';
     $form['comment_registration_register']['#access'] = FALSE;
@@ -175,20 +175,32 @@ function comment_registration_form_comment_form_alter(&$form, $form_state) {
   // remove the user registration form submit button (will use comment submit)
   unset($form['comment_registration_form']['form']['actions']['submit']);
 
-  // remove the username and email fields from the user registration form (will use comment form fields)
-  unset($form['comment_registration_form']['form']['account']['name']);
-  unset($form['comment_registration_form']['form']['account']['mail']);
+  // Standard Signup
+  if ($comment_registration_optional) {
+    // remove the username and email fields from the user registration form (will use comment form fields)
+    unset($form['comment_registration_form']['form']['account']['name']);
+    unset($form['comment_registration_form']['form']['account']['mail']);
+  }
+  // Email Registration Signup
+  else {
+    // hide duplicate core comment fields. if enabled email registration will merge username/email
+    unset($form['author']['name']);
+    unset($form['author']['mail']);    
+    //dpm($form);
+  }
 
-  // add afterbuild handler to remove unnecessary user registration form validation
+  // Afterbuild Handler - remove unnecessary user registration form validation
   $form['comment_registration_form']['form']['#after_build'][] = 'comment_registration_form_after_build';
 
-  // insert custom validation as first item.
+  // Validation Handler
   $form['#validate'][] = 'comment_registration_validate';
   $form['#validate'] = array_reverse($form['#validate']);
+  //array_unshift($form['#validate'], 'comment_registration_validate');
 
-  // insert custom submit as first item.
+  // Submit Handler
   $form['#submit'][] = 'comment_registration_submit';
   $form['#submit'] = array_reverse($form['#submit']);
+  //array_unshift($form['#submit'], 'comment_registration_submit');
 }
 
 /*
@@ -204,14 +216,14 @@ function comment_registration_form_after_build($form, &$form_state) {
 }
 
 /*
- * Recursive function.
  * Removes required validation for a specified form element and all of its children.
+ * NOTE: Recursive function.
  */
 function _comment_registration_disable_validation(&$element) {
-  drupal_add_js(drupal_get_path('module', 'comment_registration') . '/comment_registration_comment_form.js');
   drupal_add_css(drupal_get_path('module', 'comment_registration') . '/comment_registration.css');
   drupal_add_js(drupal_get_path('module', 'user') . '/user.js');
   drupal_add_css(drupal_get_path('module', 'user') . '/user.css');
+
   // bypass validation on password_confirm fapi elements
   isset($element['#element_validate']) ? $element['#element_validate'] = NULL : NULL;
 
@@ -239,47 +251,53 @@ function comment_registration_validate($form, &$form_state) {
   }
 }
 
+
 /**
  * Submit handler for comment registration form.
  */
 function comment_registration_submit($form, &$form_state) {
   if ($form_state['values']['comment_registration_register'] == 1) {
+    //dpm($user);
+    //dpm($form);
 
     // Config variables
-    $hide_username = variable_get('comment_registration_hide_username_' . $form['#node']->type, array());
+    $comment_registration_optional = variable_get('comment_registration_optional_' . $form['#node']->type, 0);
+    //dpm($comment_registration_optional);
+    //dpm($form);
+    //dpm($form_state);
 
-    if ($hide_username) {
-      //$form['author']['name']['#required'] = FALSE;
-      //hide($form['author']['name']);
-      array_unshift($form['#validate'], 'comment_registration_profile2_form_comment_form_validate');
+    // Populate previously unset fields
+    if ($comment_registration_optional) {
+      dpm('standard signup');
+      // standard signup
+      $form['comment_registration_form']['form']['account']['name'] = $form_state['values']['name'];
+      $form['comment_registration_form']['form']['account']['mail'] = $form_state['values']['mail'];
     }
-
-    // setup the user registration form and submit via the user registration submit function
-    $form['comment_registration_form']['form']['account']['name'] = $form_state['values']['name'];
-    $form['comment_registration_form']['form']['account']['mail'] = $form_state['values']['mail'];
+    else {
+      // email registration support
+      //$user->mail = $form['comment_registration_form']['form']['account']['mail'];
+    }
     $form['comment_registration_form']['form']['account']['pass'] = $form['comment_registration_form']['form']['account']['pass2'];
     $form_state['values']['pass'] = $form['comment_registration_form']['form']['account']['pass2']['#value']['pass2'];
     unset($form['comment_registration_form']['form']['account']['pass2']);
     unset($form_state['values']['pass2']);
 
+    // Submit via the user registration submit function
     user_register_submit($form['comment_registration_form']['form'], $form_state);
 
-    // change the author of the current comment to the newly created user
+    // Change author of comment to the newly created user
     global $user;
     if ($user->uid > 0) {
-      dpm('if');
       $form_state['values']['uid'] = $user->uid;
     }
     elseif ($account = user_load_by_mail($form['comment_registration_form']['form']['account']['mail'])) {
-      dpm('elseif');
       $form_state['values']['uid'] = $account->uid;
     }
 
     // Log user in.
-    $form_state['uid'] = $account->uid;
-    user_login_submit(array(), $form_state);
-
+    //$form_state['uid'] = $account->uid;
+    //user_login_submit(array(), $form_state);
     // Log the user in if they created the account and immediate login is enabled.
-    //$form_state['redirect'] = logintoboggan_process_login($account, $edit, $redirect);   
+    //$form_state['redirect'] = logintoboggan_process_login($account, $edit, $redirect);
   }
 }
