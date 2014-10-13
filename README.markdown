@@ -33,7 +33,7 @@ accounts?" setting in the "Registration and Cancellation" fieldset.
      c. set the commenting options as desired.
   
 
-## Troubleshootin
+## Troubleshooting
 
 The module will do *NOTHING* if "Administrators only" is the selected option in
 the "Registration and Cancellation" fieldset at admin/config/people/accounts.
