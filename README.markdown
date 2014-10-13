@@ -4,7 +4,7 @@ while commenting.
 
 ## Features
 
-- Comment Registration
+- Comment registration for anonymous users
 - Hide undeletable core comment fields
 - [Profile2](http://drupal.org/project/profile2) support
 - [Email Registration](http://drupal.org/project/email_registration) support
