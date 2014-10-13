@@ -175,15 +175,15 @@ function comment_registration_form_comment_form_alter(&$form, $form_state) {
   // remove the user registration form submit button (will use comment submit)
   unset($form['comment_registration_form']['form']['actions']['submit']);
 
-  // Standard Signup
+  // Optional Registration
   if ($comment_registration_optional) {
-    // remove the username and email fields from the user registration form (will use comment form fields)
+    // remove comment_registration_form account username and email fields (will use comment form fields)
     unset($form['comment_registration_form']['form']['account']['name']);
     unset($form['comment_registration_form']['form']['account']['mail']);
   }
-  // Email Registration Signup
+  // Mandatory Registration
   else {
-    // hide duplicate core comment fields. if enabled email registration will merge username/email
+    // remove duplicate core comment fields (leave comment_registration_form account fields)
     unset($form['author']['name']);
     unset($form['author']['mail']);    
   }
