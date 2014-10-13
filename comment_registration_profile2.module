@@ -15,11 +15,7 @@ function comment_registration_profile2_form_node_type_form_alter(&$form, $form_s
         '#type' => 'container',
         '#states' => array(
           'visible' => array(
-            array(
-              array(':input[name="comment_anonymous"]' => array('value' => '1')),
-              'or',
-              array(':input[name="comment_anonymous"]' => array('value' => '2')),
-            ),
+            array(':input[name="comment_registration_enabled"]' => array('checked' => TRUE)),       
           ),
         ),
       );
@@ -31,17 +27,16 @@ function comment_registration_profile2_form_node_type_form_alter(&$form, $form_s
       }
       $form['comment_registration']['comment_registration_profile2_container']['comment_registration_profile2_type'] = array(
         '#type' => 'radios',
-        '#title' => t('Comment Registration Profile2 Integration'),
+        '#title' => t('Comment Registration Profile'),
         '#default_value' => variable_get('comment_registration_profile2_type_' . $form['#node_type']->type, array()),
         '#description' => t('The profile2 to include in comments registrations for this content type.'),
-        '#access' => user_access('post comments', drupal_anonymous_user()),
         '#options' => $options,
         '#weight' => 1,
       );
     }
     system_settings_form($form);
   }
-  //dpm($form);
+  dpm($form);
 }
 
 // USER FORM
@@ -50,8 +45,6 @@ function comment_registration_profile2_form_comment_form_alter(&$form, &$form_st
 
   // Config variables
   $type_name =     variable_get('comment_registration_profile2_type_' . $form['#node']->type, array());
-  $hide_subject =  variable_get('comment_registration_profile2_hide_subject_' . $form['#node']->type, array());
-  $hide_homepage = variable_get('comment_registration_profile2_hide_homepage_' . $form['#node']->type, array());
 
   // Include profile2 on comment registration form
   if (!empty($type_name) && $type_name != '_none') {
@@ -60,10 +53,21 @@ function comment_registration_profile2_form_comment_form_alter(&$form, &$form_st
     }
     profile2_attach_form($form, $form_state);
   }
+  $form['profile_' . $type_name]['#states'] = array(
+    'visible' => array(
+      array(':input[name="comment_registration_register"]' => array('checked' => TRUE)),       
+    ),
+  );
 
-  if ($hide_homepage) {
-    hide($form['author']['homepage']);
-  }
+  // Wrap profile2 inside in a fieldset.
+  $form['profile_' . $type_name] += array(
+    '#type' => 'fieldset', 
+    '#states' => array(
+      'visible' => array(
+        array(':input[name="comment_registration_register"]' => array('checked' => TRUE)),       
+      ),
+    ),
+  );
   //dpm($form);
 }
 
