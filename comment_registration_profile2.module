@@ -44,7 +44,7 @@ function comment_registration_profile2_form_node_type_form_alter(&$form, $form_s
 function comment_registration_profile2_form_comment_form_alter(&$form, &$form_state, $form_id) {
 
   // Config variables
-  $type_name =     variable_get('comment_registration_profile2_type_' . $form['#node']->type, array());
+  $type_name = variable_get('comment_registration_profile2_type_' . $form['#node']->type, array());
 
   // Include profile2 on comment registration form
   if (!empty($type_name) && $type_name != '_none') {
