@@ -28,7 +28,7 @@ function comment_registration_profile2_form_node_type_form_alter(&$form, $form_s
         '#type' => 'radios',
         '#title' => t('Comment Registration Profile'),
         '#default_value' => variable_get('comment_registration_profile2_type_' . $form['#node_type']->type, array()),
-        '#description' => t('The profile2 to include in comments registrations for this content type.'),
+        '#description' => t('The profile2 to include in comment registrations for this content type.'),
         '#options' => $options,
         '#weight' => 1,
       );

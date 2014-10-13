@@ -75,15 +75,7 @@ function comment_registration_form_node_type_form_alter(&$form, $form_state) {
       '#type' => 'checkbox',
       '#default_value' => variable_get('comment_registration_optional_' . $form['#node_type']->type, 0),
       '#weight' => -2,     
-    );
-    // Hide Username
-    $form['comment_registration']['comment_registration_container']['comment_registration_hide_username'] = array(
-      '#title' => 'Email registration',
-      '#description' => t('Hide core comment Author field and auto generate username from email.'),
-      '#type' => 'checkbox',
-      '#default_value' => variable_get('comment_registration_hide_username_' . $form['#node_type']->type, 0),
-      '#weight' => 2,
-    );   
+    );  
     // Hide Homepage
     $form['comment_registration']['comment_registration_container']['comment_registration_profile2_hide_homepage'] = array(
       '#title' => 'Hide Homepage field',
