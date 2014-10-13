@@ -1,7 +1,0 @@
-name = Comment Registration Email Registration
-description = Email Registration support for comment registrations.
-core = 7.x
-package = Authentication
-
-dependencies[] = comment_registration
-dependencies[] = email_registration
