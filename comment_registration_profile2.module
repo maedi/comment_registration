@@ -36,7 +36,7 @@ function comment_registration_profile2_form_node_type_form_alter(&$form, $form_s
     }
     system_settings_form($form);
   }
-  dpm($form);
+  //dpm($form);
 }
 
 // USER FORM
