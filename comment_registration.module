@@ -186,7 +186,6 @@ function comment_registration_form_comment_form_alter(&$form, $form_state) {
     // hide duplicate core comment fields. if enabled email registration will merge username/email
     unset($form['author']['name']);
     unset($form['author']['mail']);    
-    //dpm($form);
   }
 
   // Afterbuild Handler - remove unnecessary user registration form validation
@@ -195,12 +194,11 @@ function comment_registration_form_comment_form_alter(&$form, $form_state) {
   // Validation Handler
   $form['#validate'][] = 'comment_registration_validate';
   $form['#validate'] = array_reverse($form['#validate']);
-  //array_unshift($form['#validate'], 'comment_registration_validate');
 
   // Submit Handler
   $form['#submit'][] = 'comment_registration_submit';
   $form['#submit'] = array_reverse($form['#submit']);
-  //array_unshift($form['#submit'], 'comment_registration_submit');
+  //dpm($form);
 }
 
 /*
@@ -251,7 +249,6 @@ function comment_registration_validate($form, &$form_state) {
   }
 }
 
-
 /**
  * Submit handler for comment registration form.
  */
@@ -262,21 +259,11 @@ function comment_registration_submit($form, &$form_state) {
 
     // Config variables
     $comment_registration_optional = variable_get('comment_registration_optional_' . $form['#node']->type, 0);
-    //dpm($comment_registration_optional);
-    //dpm($form);
-    //dpm($form_state);
 
     // Populate previously unset fields
-    if ($comment_registration_optional) {
-      dpm('standard signup');
-      // standard signup
-      $form['comment_registration_form']['form']['account']['name'] = $form_state['values']['name'];
-      $form['comment_registration_form']['form']['account']['mail'] = $form_state['values']['mail'];
-    }
-    else {
-      // email registration support
-      //$user->mail = $form['comment_registration_form']['form']['account']['mail'];
-    }
+    $form['comment_registration_form']['form']['account']['name'] = $form_state['values']['name'];
+    $form['comment_registration_form']['form']['account']['mail'] = $form_state['values']['mail'];
+
     $form['comment_registration_form']['form']['account']['pass'] = $form['comment_registration_form']['form']['account']['pass2'];
     $form_state['values']['pass'] = $form['comment_registration_form']['form']['account']['pass2']['#value']['pass2'];
     unset($form['comment_registration_form']['form']['account']['pass2']);
