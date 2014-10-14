@@ -11,7 +11,7 @@ function comment_registration_profile2_form_node_type_form_alter(&$form, $form_s
     $profile_types = profile2_get_types();
     if ($profile_types) {    
       // Container
-      $form['comment_registration']['comment_registration_profile2_container'] = array(
+      $form['comment_registration']['profile2_container'] = array(
         '#type' => 'container',
         '#states' => array(
           'visible' => array(
@@ -24,7 +24,7 @@ function comment_registration_profile2_form_node_type_form_alter(&$form, $form_s
       foreach ($profile_types as $type_name => $profile_type) {
         $options[$profile_type->type] = $profile_type->label;
       }
-      $form['comment_registration']['comment_registration_profile2_container']['comment_registration_profile2_type'] = array(
+      $form['comment_registration']['profile2_container']['comment_registration_profile2_type'] = array(
         '#type' => 'radios',
         '#title' => t('Comment Registration Profile'),
         '#default_value' => variable_get('comment_registration_profile2_type_' . $form['#node_type']->type, array()),
@@ -37,8 +37,11 @@ function comment_registration_profile2_form_node_type_form_alter(&$form, $form_s
   }
 }
 
-// USER FORM
+// FRONT END
 
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
 function comment_registration_profile2_form_comment_form_alter(&$form, &$form_state, $form_id) {
 
   // Config variables

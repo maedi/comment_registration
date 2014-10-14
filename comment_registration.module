@@ -5,6 +5,8 @@
  * Allow users to register while commenting.
  */
 
+// ADMIN
+
 /**
  * Implements hook_form_FORM_ID_alter().
  */
@@ -57,9 +59,9 @@ function comment_registration_form_node_type_form_alter(&$form, $form_state) {
           ),
         ),       
       ), 
-    );    
+    );
     // Container
-    $form['comment_registration']['comment_registration_container'] = array(
+    $form['comment_registration']['container'] = array(
       '#type' => 'container',
       '#weight' => -3,
       '#states' => array(
@@ -69,7 +71,7 @@ function comment_registration_form_node_type_form_alter(&$form, $form_state) {
       ),
     );
     // Comment registration optional?
-    $form['comment_registration']['comment_registration_container']['comment_registration_optional'] = array(
+    $form['comment_registration']['container']['comment_registration_optional'] = array(
       '#title' => 'Comment registration is optional.',
       '#description' => t('Allow users to choose if they want to register or post anonymously. Note: Email Registration support is disabled with this option.'),
       '#type' => 'checkbox',
@@ -78,7 +80,7 @@ function comment_registration_form_node_type_form_alter(&$form, $form_state) {
     );  
 
     // Hide Comment body
-    $form['comment_registration']['comment_registration_container']['comment_registration_hide_comment_body'] = array(
+    $form['comment_registration']['container']['comment_registration_hide_comment_body'] = array(
       '#title' => 'Hide Comment body field',
       '#description' => t('Hide core comment body. Deleting this field <a href="https://www.drupal.org/node/1038652">currenly causes an error.</a>'),
       '#type' => 'checkbox',
@@ -86,7 +88,7 @@ function comment_registration_form_node_type_form_alter(&$form, $form_state) {
       '#weight' => 3,
     ); 
     // Hide Homepage
-    $form['comment_registration']['comment_registration_container']['comment_registration_hide_homepage'] = array(
+    $form['comment_registration']['container']['comment_registration_hide_homepage'] = array(
       '#title' => 'Hide Homepage field',
       '#description' => t('Hide core comment Homepage field.'),
       '#type' => 'checkbox',
@@ -96,12 +98,12 @@ function comment_registration_form_node_type_form_alter(&$form, $form_state) {
   }
 }
 
+// FRONT END
+
 /**
  * Implements hook_form_FORM_ID_alter().
  */
 function comment_registration_form_comment_form_alter(&$form, $form_state) {
-
-  // FIELDS
 
   // Config variables
   $hide_homepage = variable_get('comment_registration_profile2_hide_homepage_' . $form['#node']->type, array());
@@ -156,8 +158,6 @@ function comment_registration_form_comment_form_alter(&$form, $form_state) {
     hide($form['comment_body']);
   }
 
-  // REGISTRATION
-
   // Get the user registration form
   $user_form_id = 'user_register_form';
   $form['comment_registration_form']['form'] = drupal_retrieve_form($user_form_id, $form_state);
@@ -200,6 +200,8 @@ function comment_registration_form_comment_form_alter(&$form, $form_state) {
   $form['#submit'] = array_reverse($form['#submit']);
   //dpm($form);
 }
+
+// SUBMIT HANDLERS
 
 /*
  * After build handler.
