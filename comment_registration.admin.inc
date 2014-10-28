@@ -90,12 +90,15 @@ function comment_registration_form_node_type_form_alter(&$form, $form_state) {
     );
 
     // Choose a role to assign during registration
+    $options = array('_none' => "None");
     $roles = user_roles(TRUE);
     unset($roles[DRUPAL_AUTHENTICATED_RID]);
+    $options = $options + $roles;
+
     $form['comment_registration']['container']['comment_registration_role'] = array(
       '#type' => 'radios',
       '#title' => t('Assign role during registration'),
-      '#options' => $roles,
+      '#options' => $options,
       '#default_value' => variable_get('comment_registration_role_' . $form['#node_type']->type, array()),
     );
   }
