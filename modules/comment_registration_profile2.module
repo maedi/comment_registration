@@ -9,17 +9,17 @@ function comment_registration_profile2_form_node_type_form_alter(&$form, $form_s
   if (isset($form['type'])) {
 
     $profile_types = profile2_get_types();
-    if ($profile_types) {    
+    if ($profile_types) {
       // Container
       $form['comment_registration']['profile2_container'] = array(
         '#type' => 'container',
         '#states' => array(
           'visible' => array(
-            array(':input[name="comment_registration_enabled"]' => array('checked' => TRUE)),       
+            array(':input[name="comment_registration_enabled"]' => array('checked' => TRUE)),
           ),
         ),
       );
-      // Profile 2 radios
+      // Choose a Profile2 to show on registration
       $options = array('_none' => "None");
       foreach ($profile_types as $type_name => $profile_type) {
         $options[$profile_type->type] = $profile_type->label;
@@ -52,20 +52,21 @@ function comment_registration_profile2_form_comment_form_alter(&$form, &$form_st
     if (empty($form_state['profiles'][$type_name])) {
       $form_state['profiles'][$type_name] = profile2_create(array('type' => $type_name));
     }
+    // attach the profile fields via profile2
     profile2_attach_form($form, $form_state);
   }
   $form['profile_' . $type_name]['#states'] = array(
     'visible' => array(
-      array(':input[name="comment_registration_register"]' => array('checked' => TRUE)),       
+      array(':input[name="comment_registration_register"]' => array('checked' => TRUE)),
     ),
   );
 
   // Wrap profile2 inside in a fieldset.
   $form['profile_' . $type_name] += array(
-    '#type' => 'fieldset', 
+    '#type' => 'fieldset',
     '#states' => array(
       'visible' => array(
-        array(':input[name="comment_registration_register"]' => array('checked' => TRUE)),       
+        array(':input[name="comment_registration_register"]' => array('checked' => TRUE)),
       ),
     ),
   );

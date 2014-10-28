@@ -2,3 +2,7 @@ name = "Comment Registration"
 description = "Allows users to register inline when submitting comments."
 core = 7.x
 package = Authentication
+
+files[] = comment_registration.install
+files[] = comment_registration.module
+files[] = commend_registration.admin.inc
