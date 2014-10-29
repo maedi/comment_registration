@@ -2,7 +2,7 @@
 
 // ADMIN
 
-/**
+/*
  * Implements hook_form_FORM_ID_alter().
  */
 function comment_registration_profile2_form_node_type_form_alter(&$form, $form_state) {
@@ -39,7 +39,7 @@ function comment_registration_profile2_form_node_type_form_alter(&$form, $form_s
 
 // FRONT END
 
-/**
+/*
  * Implements hook_form_FORM_ID_alter().
  */
 function comment_registration_profile2_form_comment_form_alter(&$form, &$form_state, $form_id) {
@@ -70,4 +70,15 @@ function comment_registration_profile2_form_comment_form_alter(&$form, &$form_st
       ),
     ),
   );
+}
+
+/*
+ * Add $profile to comment.tpl.php if present
+ */
+function comment_registration_profile2_preprocess_comment(&$vars) {
+  $profile_type = variable_get('comment_registration_profile2_type_' . $vars['node']->type);
+  if (isset($profile_type)) {
+    $profile = profile2_load_by_user($vars['user'], $profile_type);
+    $vars['profile'] = $profile;
+  }
 }
