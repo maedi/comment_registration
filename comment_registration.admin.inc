@@ -15,7 +15,7 @@ function comment_registration_form_node_type_form_alter(&$form, $form_state) {
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
     );
-    // Message
+    // How to enable message
     $form['comment_registration']['message'] = array(
       '#type' => 'container',
       '#states' => array(
@@ -75,7 +75,7 @@ function comment_registration_form_node_type_form_alter(&$form, $form_state) {
     // Hide Comment body
     $form['comment_registration']['container']['comment_registration_hide_comment_body'] = array(
       '#title' => 'Hide Comment body field',
-      '#description' => t('Hide core comment body. Deleting this field <a href="https://www.drupal.org/node/1038652">currenly causes an error.</a>'),
+      '#description' => t('Hide core comment body. Deleting this field <a href="https://www.drupal.org/node/1038652">currently causes an error.</a>'),
       '#type' => 'checkbox',
       '#default_value' => variable_get('comment_registration_hide_comment_body_' . $form['#node_type']->type, 0),
       '#weight' => 3,
@@ -100,6 +100,7 @@ function comment_registration_form_node_type_form_alter(&$form, $form_state) {
       '#title' => t('Assign role during registration'),
       '#options' => $options,
       '#default_value' => variable_get('comment_registration_role_' . $form['#node_type']->type, array()),
+      '#weight' => 5,
     );
   }
 }
