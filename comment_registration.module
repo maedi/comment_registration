@@ -16,12 +16,11 @@ require_once(drupal_get_path('module', 'comment_registration') . '/comment_regis
  */
 function comment_registration_form_comment_form_alter(&$form, $form_state) {
 
-  // Config variables
-  $hide_homepage = variable_get('comment_registration_profile2_hide_homepage_' . $form['#node']->type, array());
-  $hide_comment_body = variable_get('comment_registration_hide_comment_body_' . $form['#node']->type, array());
-  $comment_registration_optional = variable_get('comment_registration_optional_' . $form['#node']->type, 0);
-
-  // Do not proceed if user authenticated, or account creation is set to admin only, or anonymus commenters can't leave contact info, or commment registration is not enabled for this content type
+  // Do not proceed if:
+  // - user authenticated
+  // - account creation is set to admin only
+  // - anonymus commenters can't leave contact info
+  // - commment registration is not enabled for this content type
   global $user;
   if ($user->uid > 0 ||
       variable_get('comment_registration_enabled_' . $form['#node']->type, 0) == 0 ||
@@ -29,6 +28,11 @@ function comment_registration_form_comment_form_alter(&$form, $form_state) {
       variable_get('comment_anonymous_' . $form['#node']->type, COMMENT_ANONYMOUS_MAYNOT_CONTACT) == COMMENT_ANONYMOUS_MAYNOT_CONTACT) {
     return;
   }
+
+  // Config variables
+  $hide_homepage = variable_get('comment_registration_profile2_hide_homepage_' . $form['#node']->type, array());
+  $hide_comment_body = variable_get('comment_registration_hide_comment_body_' . $form['#node']->type, array());
+  $comment_registration_optional = variable_get('comment_registration_optional_' . $form['#node']->type, 0);
 
   if(isset($form['name']['#default_value']))  {
     $form['name']['#default_value'] = '';

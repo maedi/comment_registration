@@ -71,7 +71,6 @@ function comment_registration_form_node_type_form_alter(&$form, $form_state) {
       '#default_value' => variable_get('comment_registration_optional_' . $form['#node_type']->type, 0),
       '#weight' => -2,
     );
-
     // Hide Comment body
     $form['comment_registration']['container']['comment_registration_hide_comment_body'] = array(
       '#title' => 'Hide Comment body field',
@@ -88,7 +87,6 @@ function comment_registration_form_node_type_form_alter(&$form, $form_state) {
       '#default_value' => variable_get('comment_registration_hide_homepage_' . $form['#node_type']->type, 0),
       '#weight' => 4,
     );
-
     // Choose a role to assign during registration
     $options = array('_none' => "None");
     $roles = user_roles(TRUE);

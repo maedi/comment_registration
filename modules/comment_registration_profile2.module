@@ -45,6 +45,19 @@ function comment_registration_profile2_form_node_type_form_alter(&$form, $form_s
  */
 function comment_registration_profile2_form_comment_form_alter(&$form, &$form_state, $form_id) {
 
+  // Do not proceed if:
+  // - user authenticated
+  // - account creation is set to admin only
+  // - anonymus commenters can't leave contact info
+  // - commment registration is not enabled for this content type
+  global $user;
+  if ($user->uid > 0 ||
+      variable_get('comment_registration_enabled_' . $form['#node']->type, 0) == 0 ||
+      variable_get('user_register', USER_REGISTER_ADMINISTRATORS_ONLY) == USER_REGISTER_ADMINISTRATORS_ONLY ||
+      variable_get('comment_anonymous_' . $form['#node']->type, COMMENT_ANONYMOUS_MAYNOT_CONTACT) == COMMENT_ANONYMOUS_MAYNOT_CONTACT) {
+    return;
+  }
+
   // Config variables
   $type_name = variable_get('comment_registration_profile2_type_' . $form['#node']->type, array());
 
