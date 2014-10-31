@@ -87,18 +87,18 @@ function comment_registration_profile2_form_comment_form_alter(&$form, &$form_st
 }
 
 /*
- * Add $profile to comment.tpl.php
+ * Add $profile of comment author to comment.tpl.php
  */
 function comment_registration_profile2_preprocess_comment(&$vars) {
   $profile_type = variable_get('comment_registration_profile2_type_' . $vars['node']->type);
   if (isset($profile_type)) {
-    $profile = profile2_load_by_user($vars['user'], $profile_type);
+    $profile = profile2_load_by_user($vars['comment']->u_uid, $profile_type);
     $vars['profile'] = $profile;
   }
 }
 
 /*
- * Add $profile to comment-wrapper.tpl.php
+ * Add $profile of current user to comment-wrapper.tpl.php
  */
 function comment_registration_profile2_preprocess_comment_wrapper(&$vars) {
   $profile_type = variable_get('comment_registration_profile2_type_' . $vars['node']->type);
