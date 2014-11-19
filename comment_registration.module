@@ -183,8 +183,8 @@ function comment_registration_submit($form, &$form_state) {
     unset($form_state['values']['pass2']);
 
     // Assign role on registration
-    $rid = variable_get('comment_registration_role_' . $form['#node']->type, 0);
-    if (isset($rid)) {
+    $rid = variable_get('comment_registration_role_' . $form['#node']->type, '_none');
+    if (isset($rid) && $rid != '_none') {
       $form_state['values']['roles'][$rid] = TRUE;
     }
 

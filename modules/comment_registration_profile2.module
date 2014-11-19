@@ -27,7 +27,7 @@ function comment_registration_profile2_form_node_type_form_alter(&$form, $form_s
       $form['comment_registration']['profile2_container']['comment_registration_profile2_type'] = array(
         '#type' => 'radios',
         '#title' => t('Comment Registration Profile'),
-        '#default_value' => variable_get('comment_registration_profile2_type_' . $form['#node_type']->type, array()),
+        '#default_value' => variable_get('comment_registration_profile2_type_' . $form['#node_type']->type, '_none'),
         '#description' => t('<p>The profile2 to include in comment registrations for this content type.</p>' .
                             '<p><em>Template Tip: $profile can be used in comment.tpl.php and comment-wrapper.tpl.php</em></p>'),
         '#options' => $options,
@@ -59,7 +59,7 @@ function comment_registration_profile2_form_comment_form_alter(&$form, &$form_st
   }
 
   // Config variables
-  $type_name = variable_get('comment_registration_profile2_type_' . $form['#node']->type, array());
+  $type_name = variable_get('comment_registration_profile2_type_' . $form['#node']->type, '_none');
 
   // Include profile2 on comment registration form
   if (!empty($type_name) && $type_name != '_none') {

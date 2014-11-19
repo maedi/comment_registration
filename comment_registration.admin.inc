@@ -97,7 +97,7 @@ function comment_registration_form_node_type_form_alter(&$form, $form_state) {
       '#type' => 'radios',
       '#title' => t('Assign role during registration'),
       '#options' => $options,
-      '#default_value' => variable_get('comment_registration_role_' . $form['#node_type']->type, array()),
+      '#default_value' => variable_get('comment_registration_role_' . $form['#node_type']->type, '_none'),
       '#weight' => 5,
     );
   }
