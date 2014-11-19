@@ -17,9 +17,9 @@ require_once(drupal_get_path('module', 'comment_registration') . '/comment_regis
 function comment_registration_form_comment_form_alter(&$form, $form_state) {
 
   // Config variables
-  $hide_homepage = variable_get('comment_registration_profile2_hide_homepage_' . $form['#node']->type, array());
-  $hide_comment_body = variable_get('comment_registration_hide_comment_body_' . $form['#node']->type, array());
-  $comment_registration_optional = variable_get('comment_registration_optional_' . $form['#node']->type, 0);
+  $hide_homepage = variable_get('comment_registration_hide_homepage_' . $form['#node']->type, NULL);
+  $hide_comment_body = variable_get('comment_registration_hide_comment_body_' . $form['#node']->type, NULL);
+  $comment_registration_optional = variable_get('comment_registration_optional_' . $form['#node']->type, NULL);
 
   // Hide Fields
   if ($hide_homepage) {
